@@ -1,0 +1,7 @@
+{
+    "livePreviewUseDevServer": true,
+    "livePreviewServerProjectPath": "/",
+    "livePreviewHotReloadSupported": true,
+    "livePreviewFramework": "Custom",
+    "livePreviewServerURL": "http://localhost/nomasunos/index.php"
+}

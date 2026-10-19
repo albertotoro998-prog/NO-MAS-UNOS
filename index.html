@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="No Más Unos – La app que recuerda tus tareas para que tú te enfocas en aprender. Nunca pierdas una entrega por un descuido." />
+  <meta name="keywords" content="app estudiantes, tareas, recordatorios, organización académica, No Más Unos" />
+  <title>No Más Unos – Nunca más pierdas una entrega</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="assets/js/theme.js"></script>
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --ink:      #0D0D14;
+      --bg:       #F6F5FF;
+      --purple:   #5B4BF5;
+      --purple-lt:#EAE7FF;
+      --coral:    #FF5C57;
+      --mint:     #00C9A7;
+      --white:    #FFFFFF;
+      --surface:  #FFFFFF;
+      --muted:    #6B6882;
+      --border:   #E2DFFB;
+
+      --ff-display: 'Syne', sans-serif;
+      --ff-body:    'Inter', sans-serif;
+
+      --r-card: 20px;
+      --shadow: 0 4px 24px rgba(91,75,245,.10);
+      --ink-fixed: #0D0D14;
+      color-scheme: light;
+    }
+
+    [data-theme="dark"] {
+      --ink:      #F1F0FA;
+      --bg:       #100E1C;
+      --purple:   #8B7CFF;
+      --purple-lt:#241F3D;
+      --coral:    #FF6F68;
+      --mint:     #00E0BA;
+      --surface:  #1B1830;
+      --muted:    #A6A2C4;
+      --border:   #322C52;
+      color-scheme: dark;
+    }
+
+    /* ── RESET ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--ff-body);
+      font-size: 1rem;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+
+    /* ── UTILITIES ──────────────────────────────────────────── */
+    .container {
+      width: min(1120px, 100% - 2.5rem);
+      margin-inline: auto;
+    }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); border: 0;
+    }
+    .tag {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: var(--purple-lt); color: var(--purple);
+      font-family: var(--ff-display); font-size: .75rem; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: .3rem .8rem; border-radius: 99px;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-family: var(--ff-display); font-weight: 700; font-size: 1rem;
+      padding: .85rem 2rem; border-radius: 99px;
+      transition: transform .18s ease, box-shadow .18s ease;
+      cursor: pointer; border: none;
+    }
+    .btn:hover  { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+    .btn:focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; }
+    .btn--primary {
+      background: var(--purple); color: var(--white);
+      box-shadow: 0 6px 20px rgba(91,75,245,.35);
+    }
+    .btn--primary:hover { box-shadow: 0 10px 28px rgba(91,75,245,.45); }
+    .btn--ghost {
+      background: transparent; color: var(--purple);
+      border: 2px solid var(--border);
+    }
+    .btn--ghost:hover { border-color: var(--purple); }
+
+    /* ── NAV ────────────────────────────────────────────────── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(12px);
+      background: rgba(246,245,255,.85);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+    }
+    [data-theme="dark"] .nav {
+      background: rgba(16,14,28,.85);
+    }
+    .theme-toggle {
+      width: 38px; height: 38px; flex-shrink: 0;
+      border-radius: 50%; border: 1.5px solid var(--border);
+      background: var(--surface); color: var(--ink);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 16px; cursor: pointer; padding: 0;
+      transition: transform .18s ease, border-color .18s ease;
+    }
+    .theme-toggle:hover { transform: translateY(-2px) rotate(8deg); border-color: var(--purple); }
+    .nav__inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1.5rem;
+    }
+    .nav__logo {
+      font-family: var(--ff-display); font-weight: 800; font-size: 1.15rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .nav__logo-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--coral); flex-shrink: 0;
+    }
+    .nav__links {
+      display: flex; align-items: center; gap: 2rem;
+    }
+    .nav__links a {
+      font-size: .9rem; font-weight: 500; color: var(--muted);
+      transition: color .15s;
+    }
+    .nav__links a:hover { color: var(--purple); }
+    .nav__links a:focus-visible { outline: 2px solid var(--purple); border-radius: 4px; }
+    .nav__cta { margin-left: .5rem; }
+
+    /* ── HERO ───────────────────────────────────────────────── */
+    .hero {
+      padding: 7rem 0 5rem;
+      position: relative; overflow: hidden;
+    }
+    /* Decorative blob */
+    .hero::before {
+      content: '';
+      position: absolute; top: -180px; right: -200px;
+      width: 680px; height: 680px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(91,75,245,.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero__inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .hero__eyebrow { margin-bottom: 1.25rem; }
+    .hero__title {
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      line-height: 1.1; letter-spacing: -.02em;
+      margin-bottom: 1.4rem;
+    }
+    .hero__title em {
+      font-style: normal; color: var(--purple);
+    }
+    .hero__title .line-coral { color: var(--coral); }
+    .hero__desc {
+      font-size: 1.1rem; color: var(--muted);
+      max-width: 46ch; margin-bottom: 2.2rem; line-height: 1.7;
+    }
+    .hero__ctas { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+
+    /* Phone mockup */
+    .hero__visual {
+      display: flex; justify-content: center; align-items: center;
+      position: relative;
+    }
+    .phone {
+      width: 260px;
+      background: var(--ink-fixed); border-radius: 36px;
+      padding: 1rem;
+      box-shadow: 0 30px 80px rgba(13,13,20,.3), 0 0 0 1px rgba(255,255,255,.07);
+      position: relative; z-index: 1;
+    }
+    .phone__screen {
+      background: var(--surface); border-radius: 24px;
+      overflow: hidden; padding: 1.25rem;
+      display: flex; flex-direction: column; gap: .75rem;
+    }
+    .phone__topbar {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .phone__appname {
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: .85rem; color: var(--purple);
+    }
+    .phone__badge {
+      background: var(--coral); color: var(--white);
+      font-size: .65rem; font-weight: 700;
+      padding: .2rem .5rem; border-radius: 99px;
+    }
+    .phone__greeting {
+      font-size: .7rem; color: var(--muted);
+    }
+    .phone__greeting strong { color: var(--ink); }
+    .task-card {
+      background: var(--bg); border-radius: 12px;
+      padding: .7rem .9rem;
+      display: flex; align-items: center; gap: .7rem;
+      border-left: 3px solid transparent;
+    }
+    .task-card--urgent { border-left-color: var(--coral); }
+    .task-card--normal { border-left-color: var(--purple); }
+    .task-card--done   { border-left-color: var(--mint); opacity: .6; }
+    .task-card__icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; flex-shrink: 0;
+    }
+    .task-card__icon--red  { background: #FFE5E4; }
+    .task-card__icon--blue { background: var(--purple-lt); }
+    .task-card__icon--green{ background: #D4F7EF; }
+    .task-card__body { flex: 1; min-width: 0; }
+    .task-card__name {
+      font-size: .72rem; font-weight: 600; color: var(--ink);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .task-card__meta { font-size: .62rem; color: var(--muted); margin-top: .1rem; }
+    .phone__section-label {
+      font-size: .65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--muted); margin-top: .25rem;
+    }
+
+    /* Floating notif */
+    .notif {
+      position: absolute; bottom: 30px; left: -70px;
+      background: var(--surface); border-radius: 14px;
+      padding: .7rem 1rem;
+      box-shadow: var(--shadow);
+      display: flex; align-items: center; gap: .6rem;
+      font-size: .78rem; white-space: nowrap;
+      animation: float 3.5s ease-in-out infinite;
+    }
+    .notif__icon { font-size: 1.2rem; }
+    .notif__text strong { display: block; font-weight: 600; font-size: .8rem; }
+    .notif__text span   { color: var(--muted); font-size: .7rem; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    /* ── STATS STRIP ────────────────────────────────────────── */
+    .stats {
+      background: var(--purple); color: var(--white);
+      padding: 2.5rem 0;
+    }
+    .stats__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem; text-align: center;
+    }
+    .stats__num {
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1;
+    }
+    .stats__label {
+      font-size: .9rem; opacity: .8; margin-top: .35rem;
+    }
+
+    /* ── SECTION SHARED ─────────────────────────────────────── */
+    section { padding: 5rem 0; }
+    .section-header { text-align: center; margin-bottom: 3.5rem; }
+    .section-header .tag { margin-bottom: 1rem; }
+    .section-title {
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      line-height: 1.2; letter-spacing: -.01em;
+      margin-bottom: .9rem;
+    }
+    .section-desc { color: var(--muted); max-width: 52ch; margin-inline: auto; font-size: 1.05rem; }
+
+    /* ── PROBLEM SECTION ────────────────────────────────────── */
+    .problem { background: var(--surface); }
+    .problem__grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 5rem; align-items: center;
+    }
+    .problem__quotes { display: flex; flex-direction: column; gap: 1.25rem; }
+    .quote-bubble {
+      background: var(--bg); border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+    .quote-bubble::before {
+      content: '"'; font-family: var(--ff-display);
+      font-size: 4rem; color: var(--purple); opacity: .15;
+      position: absolute; top: -10px; left: 16px; line-height: 1;
+    }
+    .quote-bubble p { font-size: .95rem; color: var(--muted); font-style: italic; }
+    .quote-bubble .author {
+      margin-top: .6rem; font-size: .8rem; font-weight: 600;
+      color: var(--purple);
+    }
+    .problem__text .tag { margin-bottom: 1rem; }
+    .problem__text h2 {
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      line-height: 1.2; margin-bottom: 1rem;
+    }
+    .problem__text p { color: var(--muted); font-size: 1rem; margin-bottom: .8rem; }
+
+    /* ── FEATURES ───────────────────────────────────────────── */
+    .features { background: var(--bg); }
+    .features__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--surface); border-radius: var(--r-card);
+      padding: 2rem; border: 1px solid var(--border);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+    .feature-card__icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 1.25rem;
+    }
+    .feature-card__icon--purple { background: var(--purple-lt); }
+    .feature-card__icon--coral  { background: #FFE5E4; }
+    .feature-card__icon--mint   { background: #D4F7EF; }
+    .feature-card__icon--amber  { background: #FFF3D6; }
+    .feature-card h3 {
+      font-family: var(--ff-display); font-weight: 700;
+      font-size: 1.1rem; margin-bottom: .6rem;
+    }
+    .feature-card p { color: var(--muted); font-size: .93rem; line-height: 1.6; }
+
+    /* ── HOW IT WORKS ───────────────────────────────────────── */
+    .how { background: var(--white); }
+    .how__steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem; position: relative;
+    }
+    .how__steps::before {
+      content: ''; position: absolute;
+      top: 30px; left: 10%; right: 10%; height: 2px;
+      background: var(--border);
+    }
+    .step {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: 1rem; position: relative;
+    }
+    .step__num {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: var(--purple); color: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--ff-display); font-weight: 800; font-size: 1.2rem;
+      flex-shrink: 0; position: relative; z-index: 1;
+      box-shadow: 0 0 0 6px var(--white);
+    }
+    .step h3 {
+      font-family: var(--ff-display); font-weight: 700; font-size: 1rem;
+    }
+    .step p { color: var(--muted); font-size: .88rem; }
+
+    /* ── INSTALL ────────────────────────────────────────────── */
+    .install { background: var(--bg); }
+    .install__card {
+      background: var(--surface); border-radius: 28px;
+      padding: 3rem; border: 1px solid var(--border);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 3rem; align-items: start;
+    }
+    .install__card h2 {
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      margin-bottom: 1rem;
+    }
+    .install__card > div > p { color: var(--muted); font-size: .95rem; margin-bottom: 1.5rem; }
+    .req-list { display: flex; flex-direction: column; gap: .6rem; }
+    .req-item {
+      display: flex; align-items: center; gap: .75rem;
+      font-size: .92rem; color: var(--muted);
+    }
+    .req-item::before {
+      content: '✓'; color: var(--mint);
+      font-weight: 700; flex-shrink: 0;
+    }
+    .install__steps { display: flex; flex-direction: column; gap: .75rem; }
+    .install-step {
+      display: flex; align-items: flex-start; gap: 1rem;
+      background: var(--bg); border-radius: 12px; padding: .9rem 1rem;
+    }
+    .install-step__n {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--purple); color: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--ff-display); font-weight: 800; font-size: .8rem;
+      flex-shrink: 0;
+    }
+    .install-step__text { font-size: .9rem; }
+    .install-step__text strong { font-weight: 600; display: block; color: var(--ink); }
+    .install-step__text span  { color: var(--muted); font-size: .83rem; }
+
+    /* ── CTA ────────────────────────────────────────────────── */
+    .cta-section {
+      background: var(--ink-fixed); color: var(--white);
+      padding: 6rem 0; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; bottom: -200px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(91,75,245,.3) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .cta-section h2 {
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.15; letter-spacing: -.02em;
+      margin-bottom: 1rem;
+    }
+    .cta-section h2 span { color: var(--purple); }
+    .cta-section p { color: rgba(255,255,255,.65); font-size: 1.05rem; max-width: 44ch; margin: 0 auto 2.5rem; }
+    .cta-section .btn--primary {
+      background: var(--purple);
+      box-shadow: 0 8px 30px rgba(91,75,245,.5);
+    }
+
+    /* ── CONTACT ────────────────────────────────────────────── */
+    .contact { background: var(--surface); padding: 5rem 0; }
+    .contact__grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start;
+    }
+    .contact h2 {
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: clamp(1.5rem, 2.5vw, 2rem); margin-bottom: .75rem;
+    }
+    .contact p { color: var(--muted); margin-bottom: 1.5rem; }
+    .contact__item {
+      display: flex; align-items: center; gap: .8rem;
+      margin-bottom: .9rem;
+    }
+    .contact__item-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: var(--purple-lt); display: flex;
+      align-items: center; justify-content: center; font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .contact__item-text strong { font-size: .85rem; font-weight: 600; display: block; }
+    .contact__item-text span   { font-size: .82rem; color: var(--muted); }
+    .contact__form { display: flex; flex-direction: column; gap: 1rem; }
+    .form-field { display: flex; flex-direction: column; gap: .35rem; }
+    .form-field label {
+      font-size: .82rem; font-weight: 600; color: var(--ink);
+    }
+    .form-field input,
+    .form-field textarea {
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: .75rem 1rem;
+      font-family: var(--ff-body); font-size: .93rem; color: var(--ink);
+      transition: border-color .15s;
+      resize: vertical;
+    }
+    .form-field input:focus,
+    .form-field textarea:focus {
+      outline: none; border-color: var(--purple);
+    }
+    .form-success {
+      display: none; background: #D4F7EF; color: #0A6152;
+      border-radius: 10px; padding: .8rem 1rem; font-size: .9rem;
+      font-weight: 500;
+    }
+
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      background: var(--ink-fixed); color: rgba(255,255,255,.55);
+      padding: 2.5rem 0; text-align: center; font-size: .85rem;
+    }
+    footer strong { color: var(--white); }
+    footer .footer-logo {
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: 1.1rem; color: var(--white);
+      margin-bottom: .5rem; display: block;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero__inner,
+      .problem__grid,
+      .install__card,
+      .contact__grid {
+        grid-template-columns: 1fr;
+      }
+      .hero__visual { order: -1; }
+      .how__steps::before { display: none; }
+    }
+    @media (max-width: 640px) {
+      .nav__links { display: none; }
+      .stats__grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .phone { width: 230px; }
+      .notif { left: -30px; font-size: .7rem; }
+      .hero { padding: 5rem 0 3rem; }
+      section { padding: 3.5rem 0; }
+    }
+
+    /* ── REDUCED MOTION ─────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      .notif { animation: none; }
+      .feature-card:hover { transform: none; }
+      .btn:hover  { transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ──────────────────────────────────────────────── -->
+<nav class="nav" aria-label="Navegación principal">
+  <div class="container nav__inner">
+    <a href="#" class="nav__logo" aria-label="No Más Unos inicio">
+      <span class="nav__logo-dot" aria-hidden="true"></span>
+      No Más Unos
+    </a>
+    <ul class="nav__links" role="list">
+      <li><a href="#problema">El problema</a></li>
+      <li><a href="#funciones">Funciones</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <div style="display:flex; align-items:center; gap:.75rem;">
+      <button type="button" class="theme-toggle" onclick="nmuToggleTheme()" aria-label="Cambiar tema claro/oscuro" aria-pressed="false" title="Cambiar tema">🌙</button>
+      <a href="login.php" class="btn btn--ghost nav__cta">Iniciar sesión</a>
+      <a href="registro.php" class="btn btn--primary nav__cta">Registrarse gratis →</a>
+    </div>
+  </div>
+</nav>
+
+  <!-- ── HERO ──────────────────────────────────────────────── -->
+  <header class="hero">
+    <div class="container hero__inner">
+      <div class="hero__content">
+        <p class="hero__eyebrow">
+          <span class="tag">📚 Para estudiantes</span>
+        </p>
+        <h1 class="hero__title">
+          Nunca más pierdas<br>
+          una nota por<br>
+          <em>un simple olvido.</em>
+        </h1>
+        <p class="hero__desc">
+          No Más Unos es tu asistente académico personal: organiza tus tareas, te recuerda antes de cada entrega y te ayuda a priorizar para que siempre estés al día.
+        </p>
+        <div class="hero__ctas">
+  <a href="registro.php" class="btn btn--primary">
+    🚀 Registrarse gratis
+  </a>
+  <a href="login.php" class="btn btn--ghost">
+    Iniciar sesión
+  </a>
+</div>
+      </div>
+
+      <div class="hero__visual" aria-hidden="true">
+        <div class="phone">
+          <div class="phone__screen">
+            <div class="phone__topbar">
+              <span class="phone__appname">No Más Unos</span>
+              <span class="phone__badge">3 hoy</span>
+            </div>
+            <p class="phone__greeting">Buenos días, <strong>Estudiante 👋</strong></p>
+
+            <p class="phone__section-label">Urgente</p>
+            <div class="task-card task-card--urgent">
+              <div class="task-card__icon task-card__icon--red">🧮</div>
+              <div class="task-card__body">
+                <p class="task-card__name">Taller Cálculo II</p>
+                <p class="task-card__meta">⏰ Hoy 11:59 PM · Matemáticas</p>
+              </div>
+            </div>
+
+            <p class="phone__section-label">Próximamente</p>
+            <div class="task-card task-card--normal">
+              <div class="task-card__icon task-card__icon--blue">💻</div>
+              <div class="task-card__body">
+                <p class="task-card__name">Proyecto Bases de Datos</p>
+                <p class="task-card__meta">📅 Mañana · Sistemas</p>
+              </div>
+            </div>
+            <div class="task-card task-card--done">
+              <div class="task-card__icon task-card__icon--green">📝</div>
+              <div class="task-card__body">
+                <p class="task-card__name">Ensayo Historia</p>
+                <p class="task-card__meta">✅ Entregado</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notif" role="alert">
+          <span class="notif__icon">🔔</span>
+          <div class="notif__text">
+            <strong>¡Recordatorio!</strong>
+            <span>Taller en 2 horas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── STATS ──────────────────────────────────────────────── -->
+  <section class="stats" aria-labelledby="stats-heading">
+    <h2 id="stats-heading" class="sr-only">Cifras clave</h2>
+    <div class="container stats__grid">
+      <div>
+        <p class="stats__num">1 sola</p>
+        <p class="stats__label">entrega atrasada puede bajar tu promedio</p>
+      </div>
+      <div>
+        <p class="stats__num">0 excusas</p>
+        <p class="stats__label">para olvidar una tarea con No Más Unos</p>
+      </div>
+      <div>
+        <p class="stats__num">100%</p>
+        <p class="stats__label">gratis, sin anuncios, hecha para ti</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROBLEM ────────────────────────────────────────────── -->
+  <section class="problem" id="problema" aria-labelledby="problem-heading">
+    <div class="container problem__grid">
+      <div class="problem__quotes">
+        <div class="quote-bubble">
+          <p>"Se me olvidó entregar el parcial… y perdí la materia por eso."</p>
+          <p class="author">— Estudiante de 5° semestre</p>
+        </div>
+        <div class="quote-bubble">
+          <p>"Tenía la tarea hecha, pero no la entregué porque no me acordé de subirla."</p>
+          <p class="author">— Estudiante de primer año</p>
+        </div>
+        <div class="quote-bubble">
+          <p>"El estrés de no saber qué tengo pendiente me quita el sueño cada semana."</p>
+          <p class="author">— Universitario típico</p>
+        </div>
+      </div>
+      <div class="problem__text">
+        <span class="tag">😓 El problema real</span>
+        <h2 id="problem-heading">No es que no sepas. Es que nadie te recuerda a tiempo.</h2>
+        <p>Una sola entrega atrasada puede afectar tu promedio, aumentar el estrés e incluso hacer que pierdas una materia completa.</p>
+        <p>El verdadero problema no es falta de capacidad. Es falta de organización y de herramientas que te ayuden a recordar y priorizar lo que importa.</p>
+        <p><strong>Para eso nació No Más Unos.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURES ───────────────────────────────────────────── -->
+  <section class="features" id="funciones" aria-labelledby="features-heading">
+    <div class="container">
+      <div class="section-header">
+        <span class="tag">✨ Funciones principales</span>
+        <h2 class="section-title" id="features-heading">Todo lo que necesitas para<br>no quedarte atrás</h2>
+        <p class="section-desc">Herramientas simples y poderosas para que tu vida académica sea menos caótica.</p>
+      </div>
+      <div class="features__grid">
+        <div class="feature-card">
+          <div class="feature-card__icon feature-card__icon--purple" aria-hidden="true">🗂️</div>
+          <h3>Organización de tareas</h3>
+          <p>Agrega cada tarea con su nombre, materia, descripción y fecha límite. Todo en un solo lugar, siempre visible.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon feature-card__icon--coral" aria-hidden="true">⏰</div>
+          <h3>Recordatorios anticipados</h3>
+          <p>Configura con cuánta anticipación quieres ser notificado. Nunca más te dirás "se me olvidó" el día de entrega.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon feature-card__icon--mint" aria-hidden="true">🔗</div>
+          <h3>Sincronización con Google Classroom</h3>
+          <p>Conecta tu cuenta de Google y sincroniza automáticamente tus tareas del Classroom directamente a la app.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon feature-card__icon--amber" aria-hidden="true">📊</div>
+          <h3>Prioridades inteligentes</h3>
+          <p>La app te sugiere qué entregar primero según las fechas límite. Decide qué atacar hoy y deja de procrastinar.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon feature-card__icon--purple" aria-hidden="true">📅</div>
+          <h3>Calendario académico</h3>
+          <p>Visualiza todos tus compromisos en un calendario claro. Ve de un vistazo qué semanas son tranquilas y cuáles son críticas.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon feature-card__icon--coral" aria-hidden="true">📱</div>
+          <h3>Android e iOS</h3>
+          <p>Disponible en Play Store y App Store. Funciona en cualquier teléfono con Android 8+ o iOS 12+. Gratis, siempre.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+
+
+  <!-- ── CTA ───────────────────────────────────────────────── -->
+  <section class="cta-section" aria-labelledby="cta-heading">
+    <div class="container">
+      <h2 id="cta-heading">Tu promedio te lo <span>agradecerá.</span></h2>
+      <p>Miles de estudiantes ya dejaron de perder notas por descuidos. Únete y enfócate en lo que importa: aprender.</p>
+      <a href="registro.php" class="btn btn--primary">
+        🚀 Crear mi cuenta gratis
+      </a>
+    </div>
+  </section>
+
+
+
+  <!-- ── CONTACT ────────────────────────────────────────────── -->
+  <section class="contact" id="contacto" aria-labelledby="contact-heading">
+    <div class="container contact__grid">
+      <div>
+        <!-- Correo -->
+        <a href="mailto:albertotoro998@gmail.com" class="contact__item" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:1rem;margin-top:1.5rem;">
+          <div class="contact__item-icon" aria-hidden="true">📧</div>
+          <div class="contact__item-text">
+            <strong>Correo</strong>
+            <span>albertotoro998@gmail.com</span>
+          </div>
+        </a>
+
+        <!-- WhatsApp -->
+        <a href="https://wa.me/573138681970" target="_blank" rel="noopener" class="contact__item" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:1rem;margin-top:1rem;">
+          <div class="contact__item-icon" style="background:#d9fdd3;" aria-hidden="true">💬</div>
+          <div class="contact__item-text">
+            <strong>WhatsApp</strong>
+            <span>+57 313 868 1970 — Escríbenos directo</span>
+          </div>
+        </a>
+
+        <!-- Instagram -->
+        <a href="https://instagram.com/mige.e07" target="_blank" rel="noopener" class="contact__item" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:1rem;margin-top:1rem;">
+          <div class="contact__item-icon" style="background:#fce7f3;" aria-hidden="true">📸</div>
+          <div class="contact__item-text">
+            <strong>Instagram</strong>
+            <span>@mige.e07</span>
+          </div>
+        </a>
+
+        <!-- Proyecto -->
+        <div class="contact__item" style="display:flex;align-items:center;gap:1rem;margin-top:1rem;">
+          <div class="contact__item-icon" aria-hidden="true">🎓</div>
+          <div class="contact__item-text">
+            <strong>Proyecto académico</strong>
+            <span>Desarrollado por estudiantes para estudiantes</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="contact__form" role="form" aria-label="Formulario de contacto">
+          <div class="form-field">
+            <label for="nombre">Tu nombre</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Ej: Valentina Torres" autocomplete="name" />
+          </div>
+          <div class="form-field">
+            <label for="correo">Correo electrónico</label>
+            <input type="email" id="correo" name="correo" placeholder="estudiante@correo.com" autocomplete="email" />
+          </div>
+          <div class="form-field">
+            <label for="mensaje">Tu mensaje</label>
+            <textarea id="mensaje" name="mensaje" rows="4" placeholder="Cuéntanos tu duda o idea…"></textarea>
+          </div>
+          <button type="button" class="btn btn--primary" onclick="handleSubmit()" style="align-self:flex-start">
+            Enviar mensaje ✉️
+          </button>
+          <p class="form-success" id="form-success" role="alert">
+            ✅ ¡Mensaje enviado! Te responderemos pronto.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────── -->
+  <footer>
+    <div class="container">
+      <span class="footer-logo">● No Más Unos</span>
+      <p>Proyecto académico desarrollado por estudiantes · 2026</p>
+      <p style="margin-top:.4rem;">Hecho con 💜 para que nunca más pierdas una nota por un olvido.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Form submit feedback
+    function handleSubmit() {
+      const nombre  = document.getElementById('nombre').value.trim();
+      const correo  = document.getElementById('correo').value.trim();
+      const mensaje = document.getElementById('mensaje').value.trim();
+      if (!nombre || !correo || !mensaje) {
+        alert('Por favor completa todos los campos antes de enviar.');
+        return;
+      }
+      const success = document.getElementById('form-success');
+      success.style.display = 'block';
+      document.getElementById('nombre').value  = '';
+      document.getElementById('correo').value  = '';
+      document.getElementById('mensaje').value = '';
+      setTimeout(() => { success.style.display = 'none'; }, 5000);
+    }
+
+    // Smooth highlight on nav click (active link)
+    const navLinks = document.querySelectorAll('.nav__links a');
+    const sections = document.querySelectorAll('section[id], header[id]');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            link.style.color = link.getAttribute('href') === '#' + entry.target.id
+              ? 'var(--purple)' : '';
+          });
+        }
+      });
+    }, { threshold: 0.4 });
+    sections.forEach(s => observer.observe(s));
+  </script>
+</body>
+</html>
